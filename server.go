@@ -95,9 +95,6 @@ func (server *Server) serverCodec(c codec.Codec) {
 		// 接收请求
 		var header codec.Header
 		if err := c.ReadHeader(&header); err != nil {
-			if err != io.EOF && err != io.ErrUnexpectedEOF {
-				log.Println("rpc server: read header error: ", err)
-			}
 			break
 		}
 

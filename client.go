@@ -128,17 +128,22 @@ func (c *Client) Go(serviceMethod string, argv, reply interface{}) (call *Call, 
 // 发送请求
 func (c *Client) send(call *Call) (err error) {
 	// 确保每一条连接，同一时刻只发送一个数据包，防止粘包
+	c.sending.Lock()
+	defer c.sending.Unlock()
+
 	c.mu.Lock()
-	defer c.mu.Unlock()
 	if c.closing {
+		c.mu.Unlock()
 		err = errors.New("conn is closing")
-		return
-	}
-	if err = c.c.Writer(&codec.Header{ServiceMethod: call.serviceMethod, Seq: call.seq, Error: ""}, call.argv); err != nil {
 		return
 	}
 
 	c.pending[call.seq] = call
+	c.mu.Unlock()
+
+	if err = c.c.Writer(&codec.Header{ServiceMethod: call.serviceMethod, Seq: call.seq, Error: ""}, call.argv); err != nil {
+		return
+	}
 	return
 }
 

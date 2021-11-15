@@ -4,11 +4,8 @@ import (
 	"RPC"
 	"RPC/register"
 	"RPC/xclient"
-	"bufio"
-	"fmt"
 	"log"
 	"net"
-	"os"
 	"sync"
 	"time"
 )
@@ -52,8 +49,6 @@ func startServer(wg *sync.WaitGroup, addr string) {
 }
 
 func main() {
-	// log.SetFlags(0)
-
 	startRegister()
 	time.Sleep(time.Second)
 
@@ -65,37 +60,23 @@ func main() {
 	go startServer(&wg, ":9995")
 	go startServer(&wg, ":9996")
 	go startServer(&wg, ":9997")
-	go startServer(&wg, ":9998")
 	wg.Wait()
 
-	client, err := xclient.Dial(RegisterAddr, register.RandomSelect, &RPC.Option{CodecType: "gob"})
+	client, err := xclient.Dial(RegisterAddr, register.RandomSelect, &RPC.Option{CodecType: "json"})
 	if err != nil {
 		log.Fatalf("rpc client: %s", err.Error())
 	}
-	time.Sleep(time.Second) // Dial会想服务端发送Option，减少与Call发生粘包的概率
 
-	scanner := bufio.NewScanner(os.Stdin)
-	t := time.Now().UnixNano()
-	for scanner.Scan() {
-		switch scanner.Text() {
-		case "q":
-			break
-		case "r":
-			for i := 1; i < 5; i++ {
-				wg.Add(1)
-				go func(i int) {
-					defer wg.Done()
-					var reply int
-					if err := client.Call("Foo.Sum", Args{Num1: i, Num2: i * i}, &reply); err != nil {
-						log.Println("rpc client: call error: ", err.Error())
-						return
-					}
-					fmt.Printf("Foo.Sum %d + %d = %d\n", i, i*i, reply)
-				}(i)
+	for i := 1; i < 500000; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			var reply int
+			if err := client.Call("Foo.Sum", Args{Num1: i, Num2: i}, &reply); err != nil {
+				log.Println("rpc client: call error: ", err.Error(), i)
+				return
 			}
-		case "t":
-			fmt.Println("time = ", (time.Now().UnixNano()-t)/1e9)
-		}
+		}(i)
 	}
 	wg.Wait()
 }
