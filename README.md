@@ -155,7 +155,7 @@ func main() {
 }
 ```
 # 架构
-![RPC项目架构](E:\project\test\go\TinyRPC\架构图.svg)
+![RPC项目架构](https://raw.githubusercontent.com/zbmacro/TinyRPC_with_Linux_Reactor/master/架构图.svg)
 
 # 性能测试
 
