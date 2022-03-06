@@ -1,11 +1,5 @@
-module RPC
+module TinyRPC
 
-go 1.14
+go 1.17
 
-require (
-	codec v1.0.0
-)
-
-replace (
-	codec => ./codec
-)
+require golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd

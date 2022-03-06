@@ -8,7 +8,7 @@ type Header struct {
 	Error         string // 服务端错误通过header传回
 }
 
-// 序列化器 要实现的接口
+// Codec 序列化器 要实现的接口
 type Codec interface {
 	io.Closer
 	ReadHeader(*Header) error
@@ -19,7 +19,7 @@ type Codec interface {
 type Type string
 type NewCodecFunc func(io.ReadWriteCloser) Codec
 
-// 序列化器 通过写入NewCodecFuncMap实现注册
+// NewCodecFuncMap 序列化器 通过写入NewCodecFuncMap实现注册
 var NewCodecFuncMap map[Type]NewCodecFunc
 
 func init() {

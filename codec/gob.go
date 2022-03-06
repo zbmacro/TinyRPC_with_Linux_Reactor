@@ -4,8 +4,9 @@ import (
 	"bufio"
 	"encoding/gob"
 	"io"
-	"log"
 )
+
+// gob 不能读到-1
 
 type GobCodec struct {
 	conn io.ReadWriteCloser
@@ -28,19 +29,19 @@ func (g *GobCodec) ReadBody(body interface{}) error {
 
 func (g *GobCodec) Writer(header *Header, body interface{}) (err error) {
 	defer func() {
-		_ = g.buf.Flush()
-		if err != nil {
-			_ = g.Close()
+		e := g.buf.Flush()
+		if err == nil {
+			err = e
 		}
 	}()
 
 	if err = g.enc.Encode(header); err != nil {
-		log.Println("rpc codec: gob error encoding header: ", err)
 		return
 	}
-	if err = g.enc.Encode(body); err != nil {
-		log.Println("rpc codec: gob error encoding body: ", err)
-		return
+	if body != nil {
+		if err = g.enc.Encode(body); err != nil {
+			return
+		}
 	}
 	return
 }
